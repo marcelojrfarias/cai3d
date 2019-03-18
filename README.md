@@ -9,7 +9,7 @@ O projeto foi concebido na disciplina de [Sistemas Microprocessados](http://prog
 ## Esquema
 Abaixo você pode conferir o esquema do projeto assim como a lista de materiais do mesmo.
 
-[logo]: https://github.com/marcelojrfarias/cai3d/raw/master/resources/CAI3D.png
+![Esquema](/resources/CAI3D.png)
 
 | Item                       | Preço  |
 | -------------------------- | :-----:|
