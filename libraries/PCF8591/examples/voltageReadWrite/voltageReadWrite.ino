@@ -12,7 +12,7 @@ void setup()
 
 void loop()
 {
-	pcf8591.voltageWrite(3.3, false, 3.3); // 2.7Volts output
+	pcf8591.voltageWrite(2.7, false, 3.3); // 2.7Volts output
 
 	float ana0V = pcf8591.voltageRead(AIN0);
 	Serial.print(ana0V);
