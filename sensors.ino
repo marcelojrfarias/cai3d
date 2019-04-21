@@ -10,8 +10,8 @@ void updateSensorsData(boolean simulated) {
     insideTemperature = getInsideTemperature();
     insideLuminosity = getInsideLuminosity();  
   }
-	// LOG.println(insideTemperature);
-	// LOG.println(insideLuminosity);
+	// DEBUG.println(insideTemperature);
+	// DEBUG.println(insideLuminosity);
 }
 
 // Reads the temperature read by the LM35 through the PCF8591 in degrees Celsius

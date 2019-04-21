@@ -18,11 +18,11 @@ String checkForCommand() {
 
     // Check the result
     if(statusCode == 200){
-    LOG.print("checking queue..."); 
+    DEBUG.print("checking queue..."); 
     // check for a command returned from Talkback
     if(newCommand.length() != 0){
-        LOG.print("  Latest command from queue: ");
-        LOG.println(newCommand);
+        DEBUG.print("  Latest command from queue: ");
+        DEBUG.println(newCommand);
 
         if (newCommand == "FAN_0")
             fanSpeed = 0;
@@ -34,16 +34,16 @@ String checkForCommand() {
             fanSpeed = 75;
         else if (newCommand == "FAN_100")
             fanSpeed = 100;
-            
+
         setFanSpeed(fanSpeed);
     }
     else{
-        LOG.println("  Nothing new.");  
+        DEBUG.println("  Nothing new.");  
     }
 
     }
     else{
-        LOG.println("Problem checking queue. HTTP error code " + String(statusCode));
+        DEBUG.println("Problem checking queue. HTTP error code " + String(statusCode));
     }
 }
 
@@ -65,10 +65,10 @@ int deleteAllTalbackCommands() {
 
     // Check the result
     if(statusCode == 200){
-        LOG.println("Commands deleted successfull"); 
+        DEBUG.println("Commands deleted successfull"); 
     }
     else{
-        LOG.println("Problem checking queue. HTTP error code " + String(statusCode));
+        DEBUG.println("Problem checking queue. HTTP error code " + String(statusCode));
     }  
 }
                              

@@ -10,6 +10,10 @@ char ssid[] = CREDENTIALS_SSID;   // your network SSID (name)
 char pass[] = CREDENTIALS_PASS;   // your network password
 int keyIndex = 0;            // your network key Index number (needed only for WEP)
 WiFiClient  client;
+// Time library and parameters
+#include "time.h"
+struct tm currentTime;
+char currentTimeFormatted[64];
 
 // ThingSpeak library and parameters
 #include "ThingSpeak.h"
@@ -31,11 +35,11 @@ int fanSpeed = 0;
 String status = String("CAI3D");
 
 void setup() {
-  // Start the logging serial port
-  LOG.begin(LOG_SPEED);
+  // Start the serial port
+  DEBUG.begin(DEBUG_SPEED);
 
   // Print the project name and version  
-  LOG.print(PROJECT_NAME); LOG.print(" "); LOG.println(PROJECT_VERSION);
+  DEBUG.print(PROJECT_NAME); DEBUG.print(" "); DEBUG.println(PROJECT_VERSION);
 
   // Config the Builtin Led pin as output
   pinMode(LED_BUILTIN, OUTPUT);
@@ -47,7 +51,7 @@ void setup() {
   setFanSpeed(fanSpeed);
 
   // Initialize the connection
-  WiFi.mode(WIFI_STA);   
+  WiFi.mode(WIFI_STA);
 
   // Initialize ThingSpeak
   ThingSpeak.begin(client);
@@ -57,9 +61,15 @@ void setup() {
 
   // Delete all Talback commands
   deleteAllTalbackCommands();
+
+  //init and get the time
+  getTimeFromNtpServer();
 }
 
 void loop() {
+  // Update time data
+  updateLocalTime();
+
   // Manage WiFi connection
   wifiConnect();
   

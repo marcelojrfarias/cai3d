@@ -13,9 +13,9 @@ void sendThingSpeakFields() {
   int statusCode = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
   // Verifies the HTTP status code
   if (statusCode == 200) { // successful
-    LOG.println("Channel update successful.");
+    DEBUG.println("Channel update successful.");
   }
   else { // Error
-    LOG.println("Problem updating channel. HTTP error code " + String(statusCode));
+    DEBUG.println("Problem updating channel. HTTP error code " + String(statusCode));
   }
 }
