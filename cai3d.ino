@@ -25,8 +25,8 @@ const char * myTalkbackKey = CREDENTIALS_TALLBACK_KEY;
 PCF8591 pcf8591(PCF8591_I2C_ADDRESS);
 
 // Envoriment data
-int insideTemperature = 0;
-float insideLuminosity = 0;
+int insideTemperature = 25;
+float insideLuminosity = 50;
 int fanSpeed = 0;
 String status = String("CAI3D");
 
@@ -67,7 +67,7 @@ void loop() {
   checkForCommand();
 
   // Update sensors data
-  updateSensorsData();
+  updateSensorsData(true);
 
   // Write to the ThingSpeak channel fields
   updateThingSpeakFields();

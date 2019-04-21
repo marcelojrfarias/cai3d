@@ -2,9 +2,14 @@
 #include "config.h"
 
 // Updates sensors data
-void updateSensorsData() {
-  insideTemperature = getInsideTemperature();
-  insideLuminosity = getInsideLuminosity();
+void updateSensorsData(boolean simulated) {
+  if (simulated) {
+    insideTemperature += random(0, 2) - 1;
+    insideLuminosity += random(0, 10) - 5; 
+  } else {
+    insideTemperature = getInsideTemperature();
+    insideLuminosity = getInsideLuminosity();  
+  }
 	// LOG.println(insideTemperature);
 	// LOG.println(insideLuminosity);
 }
