@@ -4,12 +4,18 @@
 // Credentials file
 #include "mycredentials.h"
 
+// SD Card libraries
+#include "FS.h"
+#include "SD.h"
+#include "SPI.h"
+
 // WiFi library and parameters
 #include <WiFi.h>
 char ssid[] = CREDENTIALS_SSID;   // your network SSID (name) 
 char pass[] = CREDENTIALS_PASS;   // your network password
 int keyIndex = 0;            // your network key Index number (needed only for WEP)
 WiFiClient  client;
+
 // Time library and parameters
 #include "time.h"
 struct tm currentTime;
@@ -28,6 +34,7 @@ const char * myTalkbackKey = CREDENTIALS_TALLBACK_KEY;
 #include "PCF8591.h"
 PCF8591 pcf8591(PCF8591_I2C_ADDRESS);
 
+
 // Envoriment data
 int insideTemperature = 25;
 float insideLuminosity = 50;
@@ -40,7 +47,7 @@ void setup() {
 
   // Print the project name and version  
   DEBUG.print(PROJECT_NAME); DEBUG.print(" "); DEBUG.println(PROJECT_VERSION);
-
+  
   // Config the Builtin Led pin as output
   pinMode(LED_BUILTIN, OUTPUT);
 
@@ -64,6 +71,10 @@ void setup() {
 
   //init and get the time
   getTimeFromNtpServer();
+
+  // ini SD Card
+  initSDCard();
+  readFile(SD, "/wifi.txt");
 }
 
 void loop() {
