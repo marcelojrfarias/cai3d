@@ -45,9 +45,9 @@ void getCommandsFromSerial() {
         String param1 = received.substring(param1IndexStart,param1IndexEnd);
         String param2 = received.substring(param2IndexStart,param2IndexEnd);
 
-        DEBUG.print("CMD: "); DEBUG.print(cmd);
-        DEBUG.print(" PARAM1: "); DEBUG.print(param1);
-        DEBUG.print(" PARAM2: "); DEBUG.println(param2);
+        // DEBUG.print("CMD: "); DEBUG.print(cmd);
+        // DEBUG.print(" PARAM1: "); DEBUG.print(param1);
+        // DEBUG.print(" PARAM2: "); DEBUG.println(param2);
 
         // Sensors
         if (cmd.equals("SENSORS")) {
