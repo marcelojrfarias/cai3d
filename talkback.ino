@@ -1,6 +1,7 @@
 #include "config.h"
 
-String checkForCommand() {
+void checkForCommand() {
+	DEBUG.print(F("[TALKBACK] Checking for new commands... "));
     if (wifiConnect()) {
         // Create the TalkBack URI
         String tbURIPost = String("/talkbacks/");
@@ -19,7 +20,7 @@ String checkForCommand() {
 
         // Check the result
         if(statusCode == 200){
-        DEBUG.print("checking queue..."); 
+        // DEBUG.print("checking queue..."); 
         // check for a command returned from Talkback
         if(newCommand.length() != 0){
             DEBUG.print("  Latest command from queue: ");
@@ -39,7 +40,7 @@ String checkForCommand() {
             setFanSpeed(fanSpeed);
         }
         else{
-            DEBUG.println("  Nothing new.");  
+            DEBUG.println("Nothing new.");  
         }
 
         }
@@ -50,6 +51,8 @@ String checkForCommand() {
 }
 
 int deleteAllTalbackCommands() {
+    
+	DEBUG.print(F("[TALKBACK] Deleting all commands of fifo... "));
     if (wifiConnect()) {
         // Create the TalkBack URI
         String tbURIDelete = String("/talkbacks/");
@@ -99,8 +102,8 @@ int httpRequest(String method, String uri, String postMessage, String &response)
   client.print(postMessage);
 
   long startWaitForResponseAt = millis();
-  while(client.available() == 0 && millis() - startWaitForResponseAt < 5000){
-      delay(100);
+  while(client.available() == 0 && millis() - startWaitForResponseAt < WAIT_RESPONSE_INTERVAL){
+      delay(50);
   }
 
   if(client.available() == 0){       

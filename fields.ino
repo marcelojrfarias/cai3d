@@ -13,12 +13,13 @@ void updateThingSpeakFields() {
 
 // Send the sensors data to internet
 void sendThingSpeakFields() {
+	DEBUG.print(F("[THINGSPEAK] Sending data to the ThingSpeak... "));
   // Manage WiFi connection
   if (wifiConnect()) {
     int statusCode = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
     // Verifies the HTTP status code
     if (statusCode == 200) { // successful
-      DEBUG.println(F("Channel update successful."));
+      DEBUG.println(F("OK!"));
     }
     else { // Error
       DEBUG.print(F("Problem updating channel. HTTP error code ")); DEBUG.println(String(statusCode));

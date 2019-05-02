@@ -21,8 +21,12 @@
 // System Attempts
 #define WIFI_ATTEMPTS 5
 #define WIFI_ATTEMPTS_INTERVAL 1000
-#define SD_ATTEMPTS 3
-#define SD_ATTEMPTS_INTERVAL 1000
+#define SD_INIT_ATTEMPTS 3
+#define SD_INIT_ATTEMPTS_INTERVAL 1000
+#define SD_READ_ATTEMPTS 3
+#define SD_READ_ATTEMPTS_INTERVAL 1000
+#define SD_WRITE_ATTEMPTS 1
+#define SD_WRITE_ATTEMPTS_INTERVAL 1
 
 // PCF8591 8-bit A/D and D/A converter
 #define PCF8591_PIN_SDA D21
@@ -36,10 +40,18 @@
 #define PCF8591_FACTOR_LIGHT 0.30 * 100.0
 #define PCF8591_FAN_MIN 1.40
 #define PCF8591_FAN_MAX 1.50
+#define SENSORS_SIMULATED false
 
 // Time parameters
 #define NTP_SERVER "pool.ntp.org"
 #define GMT_OFFSET_SEC (-3)*3600 // GMT-3
 #define DAY_LIGHT_OFFSET_SEC 0 // s 
+
+// Heart beat led
+#define LED_PIN LED_BUILTIN
+#define LED_INTERVAL 250
+
+// Talk Back 
+#define WAIT_RESPONSE_INTERVAL 1000
 
 #endif

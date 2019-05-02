@@ -1,36 +1,42 @@
 bool initSDCard() {
+    DEBUG.print(F("[SD] Initializing the SD Card... "));
     int attempts = 0;
     bool cardMounted = false;
     do {
         cardMounted = SD.begin();
         if(!cardMounted){
-            DEBUG.println(F("Card Mount Failed"));
-            delay(SD_ATTEMPTS_INTERVAL);
+            // DEBUG.println(F("Card Mount Failed"));
+            delay(SD_INIT_ATTEMPTS_INTERVAL);
         }
-    } while(attempts++ < SD_ATTEMPTS);
+    } while(attempts++ < SD_INIT_ATTEMPTS);
 
-    if (!cardMounted)
+    if (!cardMounted) {
+        DEBUG.println(F(" FAIL!"));
         return false;
+    }
 
     uint8_t cardType = SD.cardType();
 
     if(cardType == CARD_NONE){
         DEBUG.println(F("No SD card attached"));
+        return false;
     }
 
-    DEBUG.print(F("SD Card Type: "));
-    if(cardType == CARD_MMC){
-        DEBUG.println(F("MMC"));
-    } else if(cardType == CARD_SD){
-        DEBUG.println(F("SDSC"));
-    } else if(cardType == CARD_SDHC){
-        DEBUG.println(F("SDHC"));
-    } else {
-        DEBUG.println(F("UNKNOWN"));
-    }
+    // DEBUG.print(F("SD Card Type: "));
+    // if(cardType == CARD_MMC){
+    //     DEBUG.println(F("MMC"));
+    // } else if(cardType == CARD_SD){
+    //     DEBUG.println(F("SDSC"));
+    // } else if(cardType == CARD_SDHC){
+    //     DEBUG.println(F("SDHC"));
+    // } else {
+    //     DEBUG.println(F("UNKNOWN"));
+    // }
 
-    uint64_t cardSize = SD.cardSize() / (1024 * 1024);
-    DEBUG.printf("SD Card Size: %lluMB\n", cardSize);
+    // uint64_t cardSize = SD.cardSize() / (1024 * 1024);
+    // DEBUG.printf("SD Card Size: %lluMB\n", cardSize);
+    
+    DEBUG.println(F("OK!"));
     return true;
 }
 
@@ -89,20 +95,20 @@ int removeDir(fs::FS &fs, const char * path){
 }
 
 int readFile(fs::FS &fs, const char * path, String *buffer){
-    DEBUG.printf("Reading file: %s\n", path);
+    // DEBUG.printf("Reading file: %s\n", path);
 
     File file = fs.open(path);
     if(!file){
-        DEBUG.println(F("Failed to open file for reading"));
+        // DEBUG.println(F("Failed to open file for reading"));
         return 1;
     }
 
-    DEBUG.print(F("Read from file: "));
+    // DEBUG.print(F("Read from file: "));
     sdBuffer = "";
     while(file.available()){
         sdBuffer += String((char)file.read());
     }
-    DEBUG.println(sdBuffer);
+    // DEBUG.println(sdBuffer);
     file.close();
     return 0;
 }
@@ -126,17 +132,17 @@ int writeFile(fs::FS &fs, const char * path, const char * message){
 }
 
 int appendFile(fs::FS &fs, const char * path, const char * message){
-    DEBUG.printf("Appending to file: %s\n", path);
+    // DEBUG.printf("Appending to file: %s\n", path);
 
     File file = fs.open(path, FILE_APPEND);
     if(!file){
-        DEBUG.println(F("Failed to open file for appending"));
+        // DEBUG.println(F("Failed to open file for appending"));
         return 1;
     }
     if(file.print(message)){
-        DEBUG.println(F("Message appended"));
+        // DEBUG.println(F("Message appended"));
     } else {
-        DEBUG.println(F("Append failed"));
+        // DEBUG.println(F("Append failed"));
         return 2;
     }
     file.close();
@@ -210,15 +216,15 @@ int testFileIO(fs::FS &fs, const char * path){
 }
 
 int readWiFiCredentialsFromSD(char ssid[], char pswd[]) {
-    
+	DEBUG.print(F("[SD] Reading credentials from SD... "));
     // Read File
     sdBuffer = "";
     int attempts = 0;
     int error = -1;
     do {
         error = readFile(SD, "/wifi.txt", &sdBuffer); 
-        delay(SD_ATTEMPTS_INTERVAL);
-    } while (error != 0 && attempts++ < SD_ATTEMPTS);
+        delay(SD_READ_ATTEMPTS_INTERVAL);
+    } while (error != 0 && attempts++ < SD_READ_ATTEMPTS);
 
     if (error != 0) {
         DEBUG.println(F("Error reading file."));
@@ -244,7 +250,8 @@ int readWiFiCredentialsFromSD(char ssid[], char pswd[]) {
     sdBuffer.substring(pswdIndex + 5, pswdIndexEnd).toCharArray(pswd, 50);
 }
 
-int logDataToSD() {
+void logDataToSD() {
+	DEBUG.print(F("[SD] Logging data to SD... "));
     if (updateLocalTime()) {
         // Date \t Time \t Temp \t Luminosity \t Fan speed \n
         String data = "";
@@ -262,12 +269,14 @@ int logDataToSD() {
         int error = -1;
         do {
             error = appendFile(SD, "/log.csv", data.c_str()); 
-            delay(SD_ATTEMPTS_INTERVAL);
-        } while (error != 0 && attempts++ < SD_ATTEMPTS);
+            delay(SD_WRITE_ATTEMPTS_INTERVAL);
+        } while (error != 0 && attempts++ < SD_WRITE_ATTEMPTS);
 
         if (error != 0) {
             DEBUG.println(F("Error appending file."));
-            return error;
+        } 
+        else {
+	        DEBUG.println(F("OK!"));    
         }
     }
     else {

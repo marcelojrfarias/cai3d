@@ -2,8 +2,9 @@
 #include "config.h"
 
 // Updates sensors data
-void updateSensorsData(boolean simulated) {
-  if (simulated) {
+void updateSensorsData() {
+	DEBUG.print(F("[SENSORS] Updating sensors... "));
+  if (SENSORS_SIMULATED) {
     insideTemperature += random(0, 2) - 1;
     insideLuminosity += random(0, 10) - 5; 
   } else {
@@ -12,6 +13,7 @@ void updateSensorsData(boolean simulated) {
   }
 	// DEBUG.println(insideTemperature);
 	// DEBUG.println(insideLuminosity);
+	DEBUG.println(F("OK!"));
 }
 
 // Reads the temperature read by the LM35 through the PCF8591 in degrees Celsius
@@ -39,4 +41,8 @@ void setFanSpeed(int speed) {
   
   // write the voltage on the PCF8591 output
   pcf8591.voltageWrite(voltage, false, 3.3);
+}
+
+void heartBeat() {
+  digitalWrite(LED_PIN, ledState = !ledState);
 }

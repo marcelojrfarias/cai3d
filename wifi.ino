@@ -4,8 +4,8 @@
 bool wifiConnect() {
   // Connect or reconnect to WiFi
   if(WiFi.status() != WL_CONNECTED) {
-    DEBUG.print(F("Attempting to connect to SSID: "));
-    DEBUG.println(ssid);
+    DEBUG.print(F("[WIFI] Attempting to connect to SSID: "));
+    DEBUG.print(ssid);
     int attempts = 0;
     bool connected = WiFi.status() == WL_CONNECTED;
 
@@ -18,7 +18,7 @@ bool wifiConnect() {
     }
 
     if (connected) {
-      DEBUG.println(F("WiFi Connected."));
+      DEBUG.println(F("WiFi Connected!"));
       return true; 
     } 
     DEBUG.println(F("WiFi connection failed!"));

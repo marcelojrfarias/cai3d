@@ -35,11 +35,32 @@ const char * myTalkbackKey = CREDENTIALS_TALLBACK_KEY;
 #include "PCF8591.h"
 PCF8591 pcf8591(PCF8591_I2C_ADDRESS);
 
-// Envoriment updateSensorsData
+// Envoriment data
 int insideTemperature = 25;
 int insideLuminosity = 40;
 int fanSpeed = 0;
+bool ledState;
 String status = String("CAI3D");
+
+// Thread and Thread Controller Libraries
+#include "Thread.h"
+#include "ThreadController.h"
+// Systems Threads
+void updateSensorsData();
+void updateThingSpeakFields();
+void checkForCommand();
+void logSensorsToSerial();
+void logDataToSD();
+void getCommandsFromSerial();
+void heartBeat();
+Thread threadUpdateSensorsData(updateSensorsData, 2500);
+Thread threadUpdateThingSpeakFields(updateThingSpeakFields, 15001); // ThingSpeak Policy
+Thread threadCheckForCommand(checkForCommand, 5000);
+Thread threadLogSensorsToSerial(logSensorsToSerial, 3000);
+Thread threadLogDataToSD(logDataToSD, 5000);
+Thread threadGetCommandsFromSerial(getCommandsFromSerial, 100);
+Thread threadHeartBeat(heartBeat, LED_INTERVAL);
+ThreadController System;
 
 void setup() {
   // Start the serial port
@@ -47,9 +68,9 @@ void setup() {
 
   // Print the project name and version  
   DEBUG.print(PROJECT_NAME); DEBUG.print(" "); DEBUG.println(PROJECT_VERSION);
-  
-  // Config the Builtin Led pin as output
-  pinMode(LED_BUILTIN, OUTPUT);
+
+  // Heart Beat Led setup
+  pinMode(LED_PIN, OUTPUT);
 
   // Start the AD/DA converter
   pcf8591.begin();
@@ -69,30 +90,26 @@ void setup() {
   // Initialize ThingSpeak
   ThingSpeak.begin(client);
 
+  // Connect to WiFi
+  wifiConnect();
+
   // Delete all Talback commands
   deleteAllTalbackCommands();
 
   //init and get the time
   getTimeFromNtpServer();
+
+  // Setup the system Threads
+  System.add(&threadUpdateSensorsData);
+  System.add(&threadUpdateThingSpeakFields);
+  System.add(&threadCheckForCommand);
+  System.add(&threadLogSensorsToSerial);
+  System.add(&threadLogDataToSD);
+  System.add(&threadGetCommandsFromSerial);
+  System.add(&threadHeartBeat);
 }
 
 void loop() {
-  // Update sensors data
-  updateSensorsData(true);
-
-  // Send data for the ThingSpeak
-  updateThingSpeakFields();
-
-  // Check commands fifo
-  checkForCommand();
-
-  // Send by the serial
-  logSensorsToSerial();
-
-  // Save data to SD card
-  logDataToSD();
-  
-  // Wait 15 seconds for the next update
-  delay(15100); // ThingSpeak Policy
+  System.run();
 }
 
