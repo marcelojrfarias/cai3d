@@ -1,32 +1,37 @@
-void initSDCard() {
-    int attemps = 0;
+bool initSDCard() {
+    int attempts = 0;
+    bool cardMounted = false;
     do {
-        if(!SD.begin()){
-            DEBUG.println("Card Mount Failed");
-            
+        cardMounted = SD.begin();
+        if(!cardMounted){
+            DEBUG.println(F("Card Mount Failed"));
+            delay(SD_ATTEMPTS_INTERVAL);
         }
-    } while(attemps++ < 3);
+    } while(attempts++ < SD_ATTEMPTS);
+
+    if (!cardMounted)
+        return false;
 
     uint8_t cardType = SD.cardType();
 
     if(cardType == CARD_NONE){
-        DEBUG.println("No SD card attached");
-        return;
+        DEBUG.println(F("No SD card attached"));
     }
 
-    DEBUG.print("SD Card Type: ");
+    DEBUG.print(F("SD Card Type: "));
     if(cardType == CARD_MMC){
-        DEBUG.println("MMC");
+        DEBUG.println(F("MMC"));
     } else if(cardType == CARD_SD){
-        DEBUG.println("SDSC");
+        DEBUG.println(F("SDSC"));
     } else if(cardType == CARD_SDHC){
-        DEBUG.println("SDHC");
+        DEBUG.println(F("SDHC"));
     } else {
-        DEBUG.println("UNKNOWN");
+        DEBUG.println(F("UNKNOWN"));
     }
 
     uint64_t cardSize = SD.cardSize() / (1024 * 1024);
     DEBUG.printf("SD Card Size: %lluMB\n", cardSize);
+    return true;
 }
 
 int listDir(fs::FS &fs, const char * dirname, uint8_t levels){
@@ -34,26 +39,26 @@ int listDir(fs::FS &fs, const char * dirname, uint8_t levels){
 
     File root = fs.open(dirname);
     if(!root){
-        DEBUG.println("Failed to open directory");
+        DEBUG.println(F("Failed to open directory"));
         return 1;
     }
     if(!root.isDirectory()){
-        DEBUG.println("Not a directory");
+        DEBUG.println(F("Not a directory"));
         return 2;
     }
 
     File file = root.openNextFile();
     while(file){
         if(file.isDirectory()){
-            DEBUG.print("  DIR : ");
+            DEBUG.print(F("  DIR : "));
             DEBUG.println(file.name());
             if(levels){
                 listDir(fs, file.name(), levels -1);
             }
         } else {
-            DEBUG.print("  FILE: ");
+            DEBUG.print(F("  FILE: "));
             DEBUG.print(file.name());
-            DEBUG.print("  SIZE: ");
+            DEBUG.print(F("  SIZE: "));
             DEBUG.println(file.size());
         }
         file = root.openNextFile();
@@ -64,9 +69,9 @@ int listDir(fs::FS &fs, const char * dirname, uint8_t levels){
 int createDir(fs::FS &fs, const char * path){
     DEBUG.printf("Creating Dir: %s\n", path);
     if(fs.mkdir(path)){
-        DEBUG.println("Dir created");
+        DEBUG.println(F("Dir created"));
     } else {
-        DEBUG.println("mkdir failed");
+        DEBUG.println(F("mkdir failed"));
         return 1;
     }
     return 0;
@@ -75,27 +80,29 @@ int createDir(fs::FS &fs, const char * path){
 int removeDir(fs::FS &fs, const char * path){
     DEBUG.printf("Removing Dir: %s\n", path);
     if(fs.rmdir(path)){
-        DEBUG.println("Dir removed");
+        DEBUG.println(F("Dir removed"));
     } else {
-        DEBUG.println("rmdir failed");
+        DEBUG.println(F("rmdir failed"));
         return 1;
     }
     return 0;
 }
 
-int readFile(fs::FS &fs, const char * path){
+int readFile(fs::FS &fs, const char * path, String *buffer){
     DEBUG.printf("Reading file: %s\n", path);
 
     File file = fs.open(path);
     if(!file){
-        DEBUG.println("Failed to open file for reading");
+        DEBUG.println(F("Failed to open file for reading"));
         return 1;
     }
 
-    DEBUG.print("Read from file: ");
+    DEBUG.print(F("Read from file: "));
+    sdBuffer = "";
     while(file.available()){
-        DEBUG.write(file.read());
+        sdBuffer += String((char)file.read());
     }
+    DEBUG.println(sdBuffer);
     file.close();
     return 0;
 }
@@ -105,13 +112,13 @@ int writeFile(fs::FS &fs, const char * path, const char * message){
 
     File file = fs.open(path, FILE_WRITE);
     if(!file){
-        DEBUG.println("Failed to open file for writing");
+        DEBUG.println(F("Failed to open file for writing"));
         return 1;
     }
     if(file.print(message)){
-        DEBUG.println("File written");
+        DEBUG.println(F("File written"));
     } else {
-        DEBUG.println("Write failed");
+        DEBUG.println(F("Write failed"));
         return 2;
     }
     file.close();
@@ -123,13 +130,13 @@ int appendFile(fs::FS &fs, const char * path, const char * message){
 
     File file = fs.open(path, FILE_APPEND);
     if(!file){
-        DEBUG.println("Failed to open file for appending");
+        DEBUG.println(F("Failed to open file for appending"));
         return 1;
     }
     if(file.print(message)){
-        DEBUG.println("Message appended");
+        DEBUG.println(F("Message appended"));
     } else {
-        DEBUG.println("Append failed");
+        DEBUG.println(F("Append failed"));
         return 2;
     }
     file.close();
@@ -139,9 +146,9 @@ int appendFile(fs::FS &fs, const char * path, const char * message){
 int renameFile(fs::FS &fs, const char * path1, const char * path2){
     DEBUG.printf("Renaming file %s to %s\n", path1, path2);
     if (fs.rename(path1, path2)) {
-        DEBUG.println("File renamed");
+        DEBUG.println(F("File renamed"));
     } else {
-        DEBUG.println("Rename failed");
+        DEBUG.println(F("Rename failed"));
         return 1;
     }
     return 0;
@@ -150,9 +157,9 @@ int renameFile(fs::FS &fs, const char * path1, const char * path2){
 int deleteFile(fs::FS &fs, const char * path){
     DEBUG.printf("Deleting file: %s\n", path);
     if(fs.remove(path)){
-        DEBUG.println("File deleted");
+        DEBUG.println(F("File deleted"));
     } else {
-        DEBUG.println("Delete failed");
+        DEBUG.println(F("Delete failed"));
         return 1;
     }
     return 0;
@@ -180,14 +187,14 @@ int testFileIO(fs::FS &fs, const char * path){
         DEBUG.printf("%u bytes read for %u ms\n", flen, end);
         file.close();
     } else {
-        DEBUG.println("Failed to open file for reading");
+        DEBUG.println(F("Failed to open file for reading"));
         return 1;
     }
 
 
     file = fs.open(path, FILE_WRITE);
     if(!file){
-        DEBUG.println("Failed to open file for writing");
+        DEBUG.println(F("Failed to open file for writing"));
         return 2;
     }
 
@@ -200,4 +207,71 @@ int testFileIO(fs::FS &fs, const char * path){
     DEBUG.printf("%u bytes written for %u ms\n", 2048 * 512, end);
     file.close();
     return 0;
+}
+
+int readWiFiCredentialsFromSD(char ssid[], char pswd[]) {
+    
+    // Read File
+    sdBuffer = "";
+    int attempts = 0;
+    int error = -1;
+    do {
+        error = readFile(SD, "/wifi.txt", &sdBuffer); 
+        delay(SD_ATTEMPTS_INTERVAL);
+    } while (error != 0 && attempts++ < SD_ATTEMPTS);
+
+    if (error != 0) {
+        DEBUG.println(F("Error reading file."));
+        return error;
+    }
+    // DEBUG.println(sdBuffer);
+
+    // Parse file
+    int ssidIndex = sdBuffer.indexOf("SSID[");
+    int ssidIndexEnd = sdBuffer.indexOf("]", ssidIndex);
+    int pswdIndex = sdBuffer.indexOf("PSWD[");
+    int pswdIndexEnd = sdBuffer.indexOf("]", pswdIndex);
+    if (ssidIndex == -1 || ssidIndexEnd == -1 || pswdIndex == -1 || pswdIndexEnd == -1) {
+        DEBUG.println(F("Invalid credentials!"));
+        // Set the standard values
+        String(CREDENTIALS_SSID).toCharArray(ssid,50);   // your network SSID (name) 
+        String(CREDENTIALS_PASS).toCharArray(pass,50);   // your network password
+        return 3;
+    }
+    DEBUG.println(F("Credentials updated!"));
+    // Update the global wifi credentials
+    sdBuffer.substring(ssidIndex + 5, ssidIndexEnd).toCharArray(ssid, 50);
+    sdBuffer.substring(pswdIndex + 5, pswdIndexEnd).toCharArray(pswd, 50);
+}
+
+int logDataToSD() {
+    if (updateLocalTime()) {
+        // Date \t Time \t Temp \t Luminosity \t Fan speed \n
+        String data = "";
+        data += (currentTimeFormatted);
+        data += (LOG_SEPARATOR);
+        data += (insideTemperature);
+        data += (LOG_SEPARATOR);
+        data += (insideLuminosity);
+        data += (LOG_SEPARATOR);
+        data += (fanSpeed);
+        data += (LOG_END_OF_LINE);
+
+        // Append File
+        int attempts = 0;
+        int error = -1;
+        do {
+            error = appendFile(SD, "/log.csv", data.c_str()); 
+            delay(SD_ATTEMPTS_INTERVAL);
+        } while (error != 0 && attempts++ < SD_ATTEMPTS);
+
+        if (error != 0) {
+            DEBUG.println(F("Error appending file."));
+            return error;
+        }
+    }
+    else {
+        DEBUG.println(F("Error updating time."));
+        getTimeFromNtpServer();
+    }
 }

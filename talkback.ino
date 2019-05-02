@@ -1,75 +1,79 @@
 #include "config.h"
 
 String checkForCommand() {
-    // Create the TalkBack URI
-    String tbURIPost = String("/talkbacks/");
-    tbURIPost += String(myTalkBackID);
-    tbURIPost += String("/commands/execute");
-    
-    // Create the message body for the POST out of the values
-    String postMessage =  String("apikey=") + String(myTalkbackKey); 
+    if (wifiConnect()) {
+        // Create the TalkBack URI
+        String tbURIPost = String("/talkbacks/");
+        tbURIPost += String(myTalkBackID);
+        tbURIPost += String("/commands/execute");
+        
+        // Create the message body for the POST out of the values
+        String postMessage =  String("apikey=") + String(myTalkbackKey); 
 
-    // Make a string for any commands that might be in the queue
-    String newCommand = String();  
+        // Make a string for any commands that might be in the queue
+        String newCommand = String();  
 
-    // Make the POST to ThingSpeak
-    int statusCode = httpRequest("POST ", tbURIPost, postMessage, newCommand);
-    client.stop();
+        // Make the POST to ThingSpeak
+        int statusCode = httpRequest("POST ", tbURIPost, postMessage, newCommand);
+        client.stop();
 
-    // Check the result
-    if(statusCode == 200){
-    DEBUG.print("checking queue..."); 
-    // check for a command returned from Talkback
-    if(newCommand.length() != 0){
-        DEBUG.print("  Latest command from queue: ");
-        DEBUG.println(newCommand);
+        // Check the result
+        if(statusCode == 200){
+        DEBUG.print("checking queue..."); 
+        // check for a command returned from Talkback
+        if(newCommand.length() != 0){
+            DEBUG.print("  Latest command from queue: ");
+            DEBUG.println(newCommand);
 
-        if (newCommand == "FAN_0")
-            fanSpeed = 0;
-        else if (newCommand == "FAN_25")
-            fanSpeed = 25;
-        else if (newCommand == "FAN_50")
-            fanSpeed = 50;
-        else if (newCommand == "FAN_75")
-            fanSpeed = 75;
-        else if (newCommand == "FAN_100")
-            fanSpeed = 100;
+            if (newCommand == "FAN_0")
+                fanSpeed = 0;
+            else if (newCommand == "FAN_25")
+                fanSpeed = 25;
+            else if (newCommand == "FAN_50")
+                fanSpeed = 50;
+            else if (newCommand == "FAN_75")
+                fanSpeed = 75;
+            else if (newCommand == "FAN_100")
+                fanSpeed = 100;
 
-        setFanSpeed(fanSpeed);
-    }
-    else{
-        DEBUG.println("  Nothing new.");  
-    }
+            setFanSpeed(fanSpeed);
+        }
+        else{
+            DEBUG.println("  Nothing new.");  
+        }
 
-    }
-    else{
-        DEBUG.println("Problem checking queue. HTTP error code " + String(statusCode));
+        }
+        else{
+            DEBUG.println("Problem checking queue. HTTP error code " + String(statusCode));
+        }
     }
 }
 
 int deleteAllTalbackCommands() {
-    // Create the TalkBack URI
-    String tbURIDelete = String("/talkbacks/");
-    tbURIDelete += String(myTalkBackID);
-    tbURIDelete += String("/commands");
-    
-    // Create the message body for the POST out of the values
-    String postMessage =  String("apikey=") + String(myTalkbackKey);
+    if (wifiConnect()) {
+        // Create the TalkBack URI
+        String tbURIDelete = String("/talkbacks/");
+        tbURIDelete += String(myTalkBackID);
+        tbURIDelete += String("/commands");
+        
+        // Create the message body for the POST out of the values
+        String postMessage =  String("apikey=") + String(myTalkbackKey);
 
-    // Make a string for any commands that might be in the queue
-    String newCommand = String();
+        // Make a string for any commands that might be in the queue
+        String newCommand = String();
 
-    // Make the POST to ThingSpeak
-    int statusCode = httpRequest("DELETE ", tbURIDelete, postMessage, newCommand);
-    client.stop();
+        // Make the POST to ThingSpeak
+        int statusCode = httpRequest("DELETE ", tbURIDelete, postMessage, newCommand);
+        client.stop();
 
-    // Check the result
-    if(statusCode == 200){
-        DEBUG.println("Commands deleted successfull"); 
+        // Check the result
+        if(statusCode == 200){
+            DEBUG.println("Commands deleted successfull"); 
+        }
+        else{
+            DEBUG.println("Problem checking queue. HTTP error code " + String(statusCode));
+        }  
     }
-    else{
-        DEBUG.println("Problem checking queue. HTTP error code " + String(statusCode));
-    }  
 }
                              
 // General function to send a request to ThingSpeak

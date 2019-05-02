@@ -8,6 +8,7 @@
 #include "FS.h"
 #include "SD.h"
 #include "SPI.h"
+String sdBuffer;
 
 // WiFi library and parameters
 #include <WiFi.h>
@@ -34,10 +35,9 @@ const char * myTalkbackKey = CREDENTIALS_TALLBACK_KEY;
 #include "PCF8591.h"
 PCF8591 pcf8591(PCF8591_I2C_ADDRESS);
 
-
-// Envoriment data
+// Envoriment updateSensorsData
 int insideTemperature = 25;
-float insideLuminosity = 50;
+int insideLuminosity = 40;
 int fanSpeed = 0;
 String status = String("CAI3D");
 
@@ -54,48 +54,45 @@ void setup() {
   // Start the AD/DA converter
   pcf8591.begin();
 
-  // Set initial fan speed
-  setFanSpeed(fanSpeed);
+  // Set initial fan speed 
+  setFanSpeed(0);
 
-  // Initialize the connection
+  // init SD Card
+  if (initSDCard()) {
+    // Read wifi credentials from SD
+    // readWiFiCredentialsFromSD(ssid, pass);
+  }
+  
+  // Setup the wifi parameters
   WiFi.mode(WIFI_STA);
 
   // Initialize ThingSpeak
   ThingSpeak.begin(client);
-
-  // Manage WiFi connection
-  wifiConnect();
 
   // Delete all Talback commands
   deleteAllTalbackCommands();
 
   //init and get the time
   getTimeFromNtpServer();
-
-  // ini SD Card
-  initSDCard();
-  readFile(SD, "/wifi.txt");
 }
 
 void loop() {
-  // Update time data
-  updateLocalTime();
-
-  // Manage WiFi connection
-  wifiConnect();
-  
-  // Check commands fifo
-  checkForCommand();
-
   // Update sensors data
   updateSensorsData(true);
 
-  // Write to the ThingSpeak channel fields
+  // Send data for the ThingSpeak
   updateThingSpeakFields();
 
-  // Send to internet
-  sendThingSpeakFields();
+  // Check commands fifo
+  checkForCommand();
 
+  // Send by the serial
+  logSensorsToSerial();
+
+  // Save data to SD card
+  logDataToSD();
+  
   // Wait 15 seconds for the next update
   delay(15100); // ThingSpeak Policy
 }
+
